@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         festival \
         git \
         curl \
+        wget \
         ca-certificates \
         build-essential \
         pkg-config \
@@ -77,7 +78,7 @@ COPY docker-init-db.py /opt/docker-init-db.py
 COPY docker-entrypoint.sh /opt/docker-entrypoint.sh
 RUN chmod +x /opt/docker-entrypoint.sh
 
-EXPOSE 80 443 5060/tcp 5060/udp 8088 8710 50010 50011
+EXPOSE 80 443 5060/tcp 5060/udp 8088 8710/udp 50010
 
 ENV PYTHONUNBUFFERED=1
 

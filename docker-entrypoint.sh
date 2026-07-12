@@ -11,8 +11,7 @@ if [ -f /opt/ops-env/.oobe ] && [ ! -f /opt/OpenPagingServer/.oobe ]; then
 fi
 
 if [ -f /opt/OpenPagingServer/.env ]; then
-    . /opt/OpenPagingServer/.env
-    DB_HOST="${DB_HOST:-127.0.0.1}"
+    DB_HOST=$(grep -oP "^DB_HOST='?\K[^']*" /opt/OpenPagingServer/.env || echo "127.0.0.1")
     DB_PORT="${DB_PORT:-3306}"
     echo "Waiting for database at ${DB_HOST}:${DB_PORT}..."
     attempts=0
