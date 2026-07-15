@@ -2,9 +2,11 @@ FROM python:3.12-slim AS base
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl wget git ca-certificates mariadb-client \
-    ffmpeg festival festvox-kallpc16k festvox-kdlpc16k festvox-don festvox-rablpc16k \
-    festlex-poslex festlex-oald festlex-cmu \
+    ffmpeg festival festvox-kallpc16k festvox-kdlpc16k \
+    festlex-poslex festlex-cmu \
     procps iproute2 iputils-ping \
+    && apt-get install -y --no-install-recommends \
+    festvox-don festvox-rablpc16k festlex-oald 2>/dev/null || true \
     && rm -rf /var/lib/apt/lists/*
 
 COPY docker-entrypoint.sh /opt/docker-entrypoint.sh
