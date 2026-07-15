@@ -34,13 +34,7 @@ RUN mkdir -p /var/lib/openpagingserver/endpointmodules && \
         [ -z "$tag" ] && echo "No tags for $repo" && return 0; \
         asset_info=$(curl -fsSL -H "Accept: application/vnd.github+json" -H "User-Agent: OpenPagingServer-docker" \
             "https://api.github.com/repos/OpenPagingServer/${repo}/releases/tags/${tag}" \
-            | python3 -c "
-import json,sys
-data=json.loads(sys.stdin.read())
-for a in data.get('assets',[]):
-    if a['name'].lower().endswith('.opsepm'):
-        print(a['name']); print(a['browser_download_url']); break
-" 2>/dev/null); \
+            | python3 -c "import json,sys; data=json.loads(sys.stdin.read()); [print(a['name']+'\n'+a['browser_download_url']) for a in data.get('assets',[]) if a['name'].lower().endswith('.opsepm')][:1]" 2>/dev/null); \
         [ -z "$asset_info" ] && echo "No .opsepm asset for $repo tag $tag" && return 0; \
         asset_name=$(echo "$asset_info" | sed -n '1p'); \
         asset_url=$(echo "$asset_info" | sed -n '2p'); \
