@@ -1,42 +1,32 @@
 #!/bin/sh
 set -e
 
-if [ -f /opt/ops-env/.env ] && [ ! -f /opt/OpenPagingServer/.env ]; then
-    cp /opt/ops-env/.env /opt/OpenPagingServer/.env
-    echo "Loaded .env from database initialization"
+if [ -f /opt/ops_env/.env ]; then
+    cp /opt/ops_env/.env /opt/OpenPagingServer/.env
+fi
+if [ -f /opt/ops_env/.oobe ]; then
+    cp /opt/ops_env/.oobe /opt/OpenPagingServer/.oobe
 fi
 
-if [ -f /opt/ops-env/.oobe ] && [ ! -f /opt/OpenPagingServer/.oobe ]; then
-    cp /opt/ops-env/.oobe /opt/OpenPagingServer/.oobe
+if [ ! -d /var/lib/openpagingserver/assets/.git ]; then
+    git clone --depth 1 https://github.com/OpenPagingServer/assets.git /var/lib/openpagingserver/assets 2>/dev/null || true
 fi
 
+DB_HOST="127.0.0.1"
 if [ -f /opt/OpenPagingServer/.env ]; then
-    DB_HOST=$(grep -oP "^DB_HOST='?\K[^']*" /opt/OpenPagingServer/.env || echo "127.0.0.1")
-    DB_PORT="${DB_PORT:-3306}"
-    echo "Waiting for database at ${DB_HOST}:${DB_PORT}..."
-    attempts=0
-    max_attempts=60
-    while [ $attempts -lt $max_attempts ]; do
-        if python -c "
-import socket, sys
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.settimeout(2)
-try:
-    s.connect(('${DB_HOST}', ${DB_PORT}))
-    s.close()
-    sys.exit(0)
-except Exception:
-    sys.exit(1)
-" 2>/dev/null; then
-            echo "Database is ready."
-            break
-        fi
-        attempts=$((attempts + 1))
-        sleep 1
-    done
-    if [ $attempts -ge $max_attempts ]; then
-        echo "WARNING: Database not reachable after ${max_attempts}s, starting anyway..."
-    fi
+    DB_HOST=$(grep -oP "^DB_HOST='?\K[^']*" /opt/OpenPagingServer/.env 2>/dev/null || echo "127.0.0.1")
 fi
 
+TRIES=0
+MAX_TRIES=60
+while ! python -c "import socket; s=socket.create_connection(('${DB_HOST}', 3306), 1); s.close()" 2>/dev/null; do
+    TRIES=$((TRIES+1))
+    if [ "$TRIES" -ge "$MAX_TRIES" ]; then
+        echo "ERROR: Database not reachable at ${DB_HOST}:3306 after ${MAX_TRIES}s"
+        exit 1
+    fi
+    sleep 1
+done
+
+cd /opt/OpenPagingServer
 exec "$@"
