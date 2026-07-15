@@ -9,6 +9,7 @@ services:
       - API_REVERSE_PROXY_ALLOWED=${API_REVERSE_PROXY_ALLOWED:-}
       - DEBUG=${DEBUG:-false}
       - DEMO_MODE=${DEMO_MODE:-false}
+      - WEB_HOST=${WEB_HOST:-0.0.0.0}
       - APP_DB_HOST=${DB_HOST:-127.0.0.1}
       - APP_DB_USER=${DB_USER:-}
       - APP_DB_PASS=${DB_PASS:-}
